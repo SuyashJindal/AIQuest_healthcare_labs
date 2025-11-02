@@ -90,3 +90,67 @@ Multi-strategy matching: Combines exact, fuzzy, and component-based approaches
 Confidence scoring: Transparent quality metrics for each mapping
 Handles complex inputs: Splits compound specialties and removes noise words
 Configurable threshold: Adjust confidence requirements based on use case
+1. Data Preprocessing Phase
+
+Loads NUCC taxonomy reference data (contains Classification, Specialization, Display_Name, Grouping fields)
+Creates a combined search text from all relevant fields
+Extracts unique search terms by splitting compound terms (e.g., "Surgery & Medicine" → ["surgery", "medicine"])
+Builds a synonym dictionary for medical abbreviations and common variations
+
+2. Input Normalization
+For each raw specialty input:
+
+Converts to lowercase
+Removes common medical prefixes/suffixes (dept, clinic, doctor, physician, etc.)
+Removes punctuation (except & and /)
+Applies synonym substitution (e.g., "cardio" → "cardiology", "ent" → "otolaryngology")
+Normalizes whitespace
+
+3. Multi-Strategy Matching
+The algorithm uses three parallel matching strategies:
+Strategy 1: Exact Term Matching
+
+Checks if processed input exactly matches any extracted search term
+Returns confidence score of 100% if match found
+Most reliable but strictest approach
+
+Strategy 2: Fuzzy String Matching
+
+Uses three fuzzy matching algorithms from rapidfuzz library:
+
+ratio: Overall string similarity
+partial_ratio: Substring matching
+token_sort_ratio: Word-order independent matching
+
+
+Takes the maximum score from all three methods
+Threshold: 70% similarity minimum
+Adjusts confidence based on match quality (95%+ = exact, else = partial)
+
+Strategy 3: Component Word Overlap
+
+Splits input and taxonomy fields into individual words
+Calculates overlap ratio between input words and classification/specialization words
+Uses Jaccard-style similarity: |intersection| / |taxonomy_words|
+Requires >50% overlap to consider a match
+
+4. Confidence Calculation
+Each match gets a confidence score adjusted by:
+
+Base score from matching algorithm
+Match type bonus (exact: +0.3, partial: +0.1, component: base only)
+Capped at 1.0 maximum
+
+5. Result Aggregation
+
+Groups all matches by taxonomy code
+Keeps highest confidence score per code
+Filters out matches below confidence threshold (default: 0.7)
+Sorts by confidence (highest first)
+Returns top matches joined with "|" separator
+
+6. Output Decision
+
+If no matches found → mark as "JUNK"
+If matches below threshold → mark as "JUNK"
+If valid matches found → return codes with confidence and explanation

@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 
 """
 NUCC Specialty Standardizer — offline, deterministic
@@ -41,8 +40,6 @@ import math
 import re
 import sys
 from collections import defaultdict, Counter
-
-# Soft deps
 try:
     import pandas as pd
 except Exception as e:
@@ -53,16 +50,12 @@ try:
     import numpy as np
 except Exception:
     np = None
-
-# Optional scikit-learn; the script will degrade gracefully if unavailable
 try:
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity
     SKLEARN_AVAILABLE = True
 except Exception:
     SKLEARN_AVAILABLE = False
-
-# Optional sentence-transformers embeddings (only if model is available locally)
 EMB_AVAILABLE = False
 try:
     from sentence_transformers import SentenceTransformer
@@ -93,24 +86,20 @@ specialities doctor dr dept department hospital clinic center centre program pra
 """.split())
 
 SEPARATORS = r"[\/,;|\+\&]|(?:\band\b)"
-
-# Optional: enrich stopwords with NLTK if available (no downloads performed here)
 try:
     import nltk
     from nltk.corpus import stopwords as nltk_stopwords
-    # If the corpus is already available, extend stopword list
+ 
     try:
         STOPWORDS |= set(w.lower() for w in nltk_stopwords.words("english"))
     except Exception:
         pass
 except Exception:
     pass
-
-# Optional: spaCy lemmatizer (if model is available locally)
 _SPACY_NLP = None
 try:
     import spacy
-    # Try a lightweight default; if not available, skip silently
+  
     try:
         _SPACY_NLP = spacy.load("en_core_web_sm", disable=["ner", "parser", "textcat"])
     except Exception:
@@ -123,20 +112,20 @@ def _lemmatize_tokens(tokens):
         return tokens
     doc = _SPACY_NLP(" ".join(tokens))
     return [t.lemma_.lower() if t.lemma_ else t.text.lower() for t in doc]
-PUNCT_TABLE = str.maketrans({c: " " for c in r"""!"#$%()*+,-./:;<=>?@[\]^_`{|}~"""})  # keep & handled separately
+PUNCT_TABLE = str.maketrans({c: " " for c in r"""!"#$%()*+,-./:;<=>?@[\]^_`{|}~"""})  
 
 def normalize_text(s: str) -> str:
-    """Lowercase, trim, remove noise words and punctuation, collapse spaces."""
+
     if not isinstance(s, str):
         return ""
     x = s.lower().strip()
     x = x.replace("&", " and ")
-    # strip common noise prefixes/suffixes
+ 
     for pat in NOISE_PATTERNS:
         x = re.sub(pat, "", x)
     x = x.translate(PUNCT_TABLE)
     x = re.sub(r"\s+", " ", x).strip()
-    # drop stopwords tokens only if string would remain non-empty
+  
     toks = [t for t in x.split() if t not in STOPWORDS]
     return " ".join(toks) if toks else x
 
@@ -157,7 +146,6 @@ def jaccard(a: set, b: set) -> float:
     return i / u if u else 0.0
 
 def soundex(word: str) -> str:
-    """Simple Soundex for crude phonetic similarity (english-biased)."""
     word = normalize_text(word)
     if not word:
         return ""
@@ -184,11 +172,7 @@ def seq_ratio(a: str, b: str) -> float:
     return difflib.SequenceMatcher(None, a, b).ratio()
 
 def build_candidates(nucc_df):
-    """
-    Build a canonical candidate text per code:
-    display_name (preferred) else "classification - specialization" else just classification.
-    Also create a set of surfaces for matching and a normalized form.
-    """
+
     records = []
     for _, row in nucc_df.iterrows():
         code = str(row.get("code", "")).strip()
@@ -223,13 +207,6 @@ def build_candidates(nucc_df):
     return records
 
 def load_synonyms(path):
-    """
-    synonyms.csv columns:
-    alias, normalized, code (optional)
-    - alias: what appears in raw input (e.g., "obgyn", "ent", "cardio")
-    - normalized: canonical text to search among NUCC (e.g., "obstetrics and gynecology")
-    - code: if provided, map directly to this NUCC code
-    """
     syn = []
     try:
         import pandas as pd
@@ -255,11 +232,7 @@ def build_tfidf(candidates):
 
 
 def build_embeddings(candidates):
-    """
-    If sentence-transformers is available and a model is cached locally,
-    precompute embeddings for candidate norms.
-    The model name can be overridden via env var EMB_MODEL (default: all-MiniLM-L6-v2).
-    """
+  
     if not EMB_AVAILABLE:
         return None, None
     import os
@@ -290,7 +263,6 @@ def tfidf_scores(vec, X, query_norm):
     return sims
 
 def trigram_jaccard_scores(candidates, query):
-    """Fallback similarity based on trigram Jaccard."""
     q_tris = set(char_ngrams(query, 3))
     scores = []
     for i, c in enumerate(candidates):
@@ -299,13 +271,12 @@ def trigram_jaccard_scores(candidates, query):
     return scores
 
 def choose_codes_for_phrase(phrase, candidates, tfidf_vec, tfidf_X, emb_model, emb_vecs, syn_index, threshold=0.6, k=8):
-    """Return ([(code, score, how)], best_score_explain)"""
     raw = phrase
     norm = normalize_text(phrase)
     tokens = set(norm.split())
     phon = set(soundex(t) for t in tokens)
 
-    # 0) Synonym direct mapping
+ 
     if norm in syn_index["alias->code"]:
         codes = syn_index["alias->code"][norm]
         out = [(c, 0.99, "synonym->code") for c in sorted(codes)]

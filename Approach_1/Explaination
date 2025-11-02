@@ -1,0 +1,92 @@
+Overview
+This tool takes unstructured, free-text provider specialty descriptions and maps them to official NUCC taxonomy codes using fuzzy matching and intelligent text processing.
+How the Mapping Works
+1. Data Preprocessing
+The mapper first loads the NUCC taxonomy reference data and preprocesses it:
+
+Combined Search Text: Creates a searchable text field combining Classification, Specialization, Display_Name, and Grouping fields
+Search Terms Extraction: Extracts individual terms from compound classifications (splits on '&' and '/')
+Synonym Dictionary: Builds a comprehensive dictionary of medical specialty abbreviations and common variations (e.g., "ent" → "otolaryngology", "cardio" → "cardiology")
+
+2. Input Processing
+Raw specialty text undergoes several cleaning steps:
+
+Converts to lowercase
+Removes common medical prefixes/suffixes (dept, clinic, physician, doctor, etc.)
+Applies synonym substitution (replaces abbreviations with full terms)
+Normalizes whitespace and punctuation
+
+3. Multi-Strategy Matching
+The mapper uses three complementary strategies to find matches:
+Strategy 1: Exact Term Matching
+
+Checks if the processed input exactly matches any extracted search term
+Provides 100% match score for exact matches
+
+Strategy 2: Fuzzy String Matching
+
+Uses RapidFuzz library to calculate similarity scores
+Compares against the combined search text using three methods:
+
+Ratio: Overall string similarity
+Partial Ratio: Best matching substring
+Token Sort Ratio: Word-order independent matching
+
+
+Takes the best score from all three methods
+Threshold: 70% similarity for consideration
+
+Strategy 3: Component Word Matching
+
+Calculates word overlap between input and taxonomy fields
+Measures how many input words appear in Classification or Specialization
+Useful for multi-word specialties where partial matches are meaningful
+
+4. Confidence Scoring
+Each match receives a confidence score based on:
+
+Base similarity score (0-1)
+Match type bonus:
+
+Exact matches: +0.3 bonus
+Partial matches: +0.1 bonus
+Component matches: No bonus
+
+
+
+5. Result Aggregation
+
+Groups matches by NUCC code (same code may match through different strategies)
+Keeps the highest confidence for each code
+Filters results by confidence threshold (default: 0.7)
+Returns codes in pipe-separated format (e.g., "code1|code2|code3")
+
+6. Output Classification
+Results are classified as:
+
+Mapped: One or more NUCC codes with confidence ≥ threshold
+JUNK: No matches found, empty input, or confidence below threshold
+
+Usage
+bashpython mapper.py \
+  --nucc path/to/nucc_taxonomy.csv \
+  --input path/to/raw_specialties.csv \
+  --out path/to/output.csv \
+  --confidence 0.7
+Input Format
+CSV file with a raw_specialty column containing free-text specialty descriptions.
+Output Format
+CSV file with columns:
+
+raw_specialty: Original input text
+nucc_codes: Pipe-separated NUCC codes or "JUNK"
+confidence: Average confidence score (0-1)
+explain: Human-readable explanation of the mapping
+
+Key Features
+
+Robust synonym handling: 40+ medical abbreviations and variations
+Multi-strategy matching: Combines exact, fuzzy, and component-based approaches
+Confidence scoring: Transparent quality metrics for each mapping
+Handles complex inputs: Splits compound specialties and removes noise words
+Configurable threshold: Adjust confidence requirements based on use case

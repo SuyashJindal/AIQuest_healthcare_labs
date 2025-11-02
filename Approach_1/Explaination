@@ -154,3 +154,8 @@ Returns top matches joined with "|" separator
 If no matches found → mark as "JUNK"
 If matches below threshold → mark as "JUNK"
 If valid matches found → return codes with confidence and explanation
+Run through this command :-python3 file1.py \
+  --nucc path/to/nucc_taxonomy.csv \
+  --input path/to/raw_specialties.csv \
+  --out path/to/output.csv \
+  --confidence 0.7

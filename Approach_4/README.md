@@ -43,11 +43,7 @@ For each input specialty:
 
 Clone the repository and install dependencies:
 
-```bash
-git clone https://github.com/<your-username>/nucc-specialty-mapper.git
-cd nucc-specialty-mapper
-pip install -r requirements.txt
-```
+
 
 ### Required Packages
 ```text
@@ -188,14 +184,4 @@ NUCCSpecialtyMapper
 - Vectorization and phonetic indices improve runtime significantly
 - Adjustable confidence threshold for stricter or looser mappings
 
----
 
-## 🧑‍💻 Author
-**Suyash Jindal**  
-IIT Kanpur | Healthcare Data Standardization Project  
-📧 [Contact via GitHub](https://github.com/<your-username>)
-
----
-
-## 📜 License
-MIT License © 2025 Suyash Jindal

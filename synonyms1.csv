@@ -1,0 +1,125 @@
+abbreviation,full_name,category
+ent,otolaryngology,specialty
+obgyn,obstetrics gynecology,specialty
+ob/gyn,obstetrics gynecology,specialty
+ob-gyn,obstetrics gynecology,specialty
+cardio,cardiology,specialty
+peds,pediatrics,specialty
+neuro,neurology,specialty
+psych,psychiatry,specialty
+ortho,orthopedic surgery,specialty
+derm,dermatology,specialty
+gi,gastroenterology,specialty
+pulm,pulmonology,specialty
+endo,endocrinology,specialty
+heme,hematology,specialty
+onc,oncology,specialty
+nephro,nephrology,specialty
+rheum,rheumatology,specialty
+uro,urology,specialty
+ophthal,ophthalmology,specialty
+opthal,ophthalmology,specialty
+pm&r,physical medicine rehabilitation,specialty
+pmr,physical medicine rehabilitation,specialty
+er,emergency medicine,specialty
+im,internal medicine,specialty
+fp,family practice,specialty
+fm,family medicine,specialty
+addiction med,addiction medicine,specialty
+pain,pain medicine,specialty
+crit care,critical care medicine,specialty
+icu,critical care medicine,specialty
+anesthesia,anesthesiology,specialty
+path,pathology,specialty
+rad,radiology,specialty
+radio,radiology,specialty
+surg,surgery,specialty
+vascular,vascular surgery,specialty
+plastics,plastic surgery,specialty
+ct surgery,cardiothoracic surgery,specialty
+cardiothoracic,cardiothoracic surgery,specialty
+gen surg,general surgery,specialty
+trauma,trauma surgery,specialty
+pcp,primary care,specialty
+hospitalist,hospital medicine,specialty
+intensivist,critical care medicine,specialty
+neonatology,neonatal-perinatal medicine,specialty
+neo,neonatal-perinatal medicine,specialty
+allergy,allergy immunology,specialty
+infectious disease,infectious disease,specialty
+id,infectious disease,specialty
+sports med,sports medicine,specialty
+occ med,occupational medicine,specialty
+preventive med,preventive medicine,specialty
+public health,preventive medicine,specialty
+geriatrics,geriatric medicine,specialty
+palliative,palliative medicine,specialty
+hospice,hospice palliative medicine,specialty
+wound care,wound management,specialty
+bariatric,bariatric medicine,specialty
+obesity med,bariatric medicine,specialty
+sleep med,sleep medicine,specialty
+sleep,sleep medicine,specialty
+interventional cardiology,interventional cardiology,subspecialty
+electrophysiology,cardiac electrophysiology,subspecialty
+ep,cardiac electrophysiology,subspecialty
+heart failure,advanced heart failure,subspecialty
+transplant cardiology,transplant cardiology,subspecialty
+interventional radiology,vascular interventional radiology,subspecialty
+ir,vascular interventional radiology,subspecialty
+neuroradiology,neuroradiology,subspecialty
+breast imaging,breast imaging,subspecialty
+body imaging,body imaging,subspecialty
+msk,musculoskeletal radiology,subspecialty
+musculoskeletal,musculoskeletal radiology,subspecialty
+nuclear med,nuclear medicine,subspecialty
+nuclear,nuclear medicine,subspecialty
+radiation oncology,radiation oncology,subspecialty
+rad onc,radiation oncology,subspecialty
+medical oncology,medical oncology,subspecialty
+med onc,medical oncology,subspecialty
+surgical oncology,surgical oncology,subspecialty
+surg onc,surgical oncology,subspecialty
+gynecologic oncology,gynecologic oncology,subspecialty
+gyn onc,gynecologic oncology,subspecialty
+hematology oncology,hematology oncology,subspecialty
+heme onc,hematology oncology,subspecialty
+pediatric cardiology,pediatric cardiology,subspecialty
+ped cardio,pediatric cardiology,subspecialty
+pediatric surgery,pediatric surgery,subspecialty
+ped surg,pediatric surgery,subspecialty
+pediatric neurology,pediatric neurology,subspecialty
+ped neuro,pediatric neurology,subspecialty
+maternal fetal medicine,maternal fetal medicine,subspecialty
+mfm,maternal fetal medicine,subspecialty
+reproductive endocrinology,reproductive endocrinology,subspecialty
+rei,reproductive endocrinology infertility,subspecialty
+urogynecology,female pelvic medicine reconstructive surgery,subspecialty
+urogyn,female pelvic medicine reconstructive surgery,subspecialty
+colorectal,colon rectal surgery,subspecialty
+colon rectal,colon rectal surgery,subspecialty
+hand surgery,hand surgery,subspecialty
+spine surgery,spine surgery,subspecialty
+foot ankle,foot ankle surgery,subspecialty
+shoulder elbow,shoulder elbow surgery,subspecialty
+joint replacement,adult reconstructive orthopedics,subspecialty
+sports orthopedics,sports medicine orthopedics,subspecialty
+trauma orthopedics,orthopedic trauma,subspecialty
+pediatric orthopedics,pediatric orthopedics,subspecialty
+ped ortho,pediatric orthopedics,subspecialty
+vascular surgery,vascular surgery,subspecialty
+vasc surg,vascular surgery,subspecialty
+thoracic surgery,thoracic surgery,subspecialty
+cardiac surgery,cardiac surgery,subspecialty
+neurosurgery,neurological surgery,subspecialty
+nsurg,neurological surgery,subspecialty
+spine neurosurgery,spine neurosurgery,subspecialty
+pediatric neurosurgery,pediatric neurosurgery,subspecialty
+ped nsurg,pediatric neurosurgery,subspecialty
+plastic surgery,plastic surgery,subspecialty
+plastics,plastic surgery,subspecialty
+craniofacial,craniofacial surgery,subspecialty
+hand plastic,hand plastic surgery,subspecialty
+cosmetic,cosmetic surgery,modifier
+reconstructive,reconstructive surgery,modifier
+aesthetic,aesthetic surgery,modifier

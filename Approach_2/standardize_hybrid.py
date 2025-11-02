@@ -34,7 +34,7 @@ import difflib
 
 
 def normalize_text(s: str) -> str:
-    """Comprehensive text normalization"""
+   
     if s is None or pd.isna(s):
         return ""
     s = str(s)
@@ -52,7 +52,7 @@ def normalize_text(s: str) -> str:
 
 
 def tokenize(s: str) -> List[str]:
-    """Tokenize normalized text"""
+  
     s = normalize_text(s)
     s = re.sub(r"\b&\b", " and ", s)
     s = re.sub(r"\s+", " ", s).strip()
@@ -60,7 +60,7 @@ def tokenize(s: str) -> List[str]:
 
 
 def split_segments(raw: str) -> List[str]:
-    """Split compound specialties (e.g., 'Cardio/Diab' -> ['Cardio', 'Diab'])"""
+ 
     if not raw:
         return []
     parts = re.split(r"\s*(?:\/|,|\+|\band\b|\&|\|)\s*", str(raw), flags=re.IGNORECASE)
@@ -141,7 +141,7 @@ DEFAULT_SYNONYMS = {
 
 
 def load_synonyms(path: str = None) -> Dict[str, str]:
-    """Load synonyms from CSV or use defaults"""
+
     syn = dict(DEFAULT_SYNONYMS)
     if not path:
         return syn
@@ -221,7 +221,7 @@ def levenshtein_similarity(s1: str, s2: str) -> float:
 
 
 def jaro_winkler_similarity(s1: str, s2: str) -> float:
-    """Jaro-Winkler similarity (requires jellyfish)"""
+ 
     if not JELLYFISH_AVAILABLE or not s1 or not s2:
         return 0.0
     return jellyfish.jaro_winkler_similarity(s1, s2)
@@ -404,7 +404,7 @@ class HybridNUCCMapper:
         return [], 0.0, ""
     
     def _stage4_tfidf_match(self, query_expanded: str) -> Tuple[List[int], float, str]:
-        """Stage 4: TF-IDF cosine similarity"""
+     
         if not query_expanded:
             return [], 0.0, ""
         
@@ -431,7 +431,6 @@ class HybridNUCCMapper:
         return [], 0.0, ""
     
     def _check_general_classification(self, query_norm: str, indices: List[int]) -> Tuple[bool, List[int]]:
-        """Check if query matches a general classification (return all subspecialties)"""
         if not indices:
             return False, []
         
@@ -445,8 +444,6 @@ class HybridNUCCMapper:
         return False, indices
     
     def map_single_segment(self, segment: str) -> Dict[str, Any]:
-        """Map a single specialty segment through the pipeline"""
-        # Normalize and expand
         query_norm = normalize_text(segment)
         query_expanded = expand_synonyms(segment, self.synonyms)
         query_tokens = tokenize(query_expanded)
@@ -458,27 +455,23 @@ class HybridNUCCMapper:
                 "confidence": 0.0,
                 "explain": "empty_after_normalization"
             }
-        
-        # Stage 1: Exact match
         indices, conf, method = self._stage1_exact_match(query_norm)
         if not indices:
             indices, conf, method = self._stage1_exact_match(query_expanded_str)
         
-        # Stage 2: Phonetic match
+   
         if not indices or conf < self.threshold:
             ph_indices, ph_conf, ph_method = self._stage2_phonetic_match(query_norm)
             if ph_conf > conf:
                 indices, conf, method = ph_indices, ph_conf, ph_method
         
-        # Stage 3: Fuzzy match
+ 
         if not indices or conf < self.threshold:
             fz_indices, fz_conf, fz_method = self._stage3_fuzzy_match(
                 segment, query_norm, query_tokens
             )
             if fz_conf > conf:
                 indices, conf, method = fz_indices, fz_conf, fz_method
-        
-        # Stage 4: TF-IDF match
         if not indices or conf < self.threshold:
             tf_indices, tf_conf, tf_method = self._stage4_tfidf_match(query_expanded_str)
             if tf_conf > conf:
@@ -499,10 +492,8 @@ class HybridNUCCMapper:
                 "explain": f"low_confidence_{method}" if method else "no_match"
             }
         
-        # Get codes
+ 
         codes = [self.index.df.iloc[idx]["code"] for idx in indices]
-        
-        # Learn synonyms
         if self.learn_synonyms and codes:
             self._record_mapping(query_norm, codes[0])
         
@@ -513,7 +504,7 @@ class HybridNUCCMapper:
         }
     
     def map_specialty(self, raw_specialty: str) -> Dict[str, Any]:
-        """Map raw specialty (handles compound specialties)"""
+     
         if not raw_specialty or pd.isna(raw_specialty):
             return {
                 "raw_specialty": raw_specialty,
@@ -579,15 +570,15 @@ class HybridNUCCMapper:
         
         for query, code_counts in self.learned_mappings.items():
             if sum(code_counts.values()) >= min_frequency:
-                # Get most common code
+             
                 most_common_code = code_counts.most_common(1)[0][0]
                 
-                # Get corresponding classification
+             
                 matching_rows = self.index.df[self.index.df["code"] == most_common_code]
                 if not matching_rows.empty:
                     classification = matching_rows.iloc[0]["norm_classification"]
                     
-                    # Only add if it's an abbreviation (shorter than classification)
+                  
                     if len(query) < len(classification) * 0.7:
                         learned[query] = classification
         
@@ -690,8 +681,6 @@ def main():
     print(f"  Execution time:      {elapsed:.2f} seconds")
     print(f"  Throughput:          {total/elapsed:.1f} records/sec")
     print("="*70)
-    
-    # Save learned synonyms
     if args.learn_synonyms and args.save_learned:
         learned = mapper.get_learned_synonyms(min_frequency=3)
         if learned:

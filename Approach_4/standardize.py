@@ -1,9 +1,3 @@
-"""
-NUCC Provider Specialty Standardization Tool
-Combines multiple algorithms: Fuzzy Matching, TF-IDF, Phonetic Encoding, N-grams
-Author: HiLabs Challenge Solution
-"""
-
 import pandas as pd
 import numpy as np
 import re
@@ -16,20 +10,9 @@ import time
 
 class NUCCSpecialtyMapper:
     def __init__(self, nucc_csv_path, confidence_threshold=0.70):
-        """
-        Initialize mapper with NUCC taxonomy data
-        
-        Args:
-            nucc_csv_path: Path to NUCC master CSV
-            confidence_threshold: Minimum confidence for valid mapping
-        """
         self.confidence_threshold = confidence_threshold
         self.nucc_df = pd.read_csv(nucc_csv_path)
-        
-        # Standardize column names (handle case variations)
         self.nucc_df.columns = self.nucc_df.columns.str.strip()
-        
-        # Map to expected column names
         column_mapping = {
             'Code': 'code',
             'Grouping': 'grouping',
@@ -40,13 +23,9 @@ class NUCCSpecialtyMapper:
             'Notes': 'notes',
             'Section': 'section'
         }
-        
-        # Rename columns if they exist
         for old_col, new_col in column_mapping.items():
             if old_col in self.nucc_df.columns:
                 self.nucc_df.rename(columns={old_col: new_col}, inplace=True)
-        
-        # Medical abbreviation dictionary
         self.synonyms = {
             'ent': 'otolaryngology',
             'obgyn': 'obstetrics gynecology',
@@ -87,17 +66,17 @@ class NUCCSpecialtyMapper:
         print(f"✓ Loaded {len(self.nucc_df)} NUCC taxonomy codes")
     
     def _normalize_text(self, text):
-        """Normalize text for matching"""
+      
         if pd.isna(text):
             return ""
         
         text = str(text).lower().strip()
-        # Remove special characters but keep spaces
+     
         text = re.sub(r'[^\w\s]', ' ', text)
-        # Remove multiple spaces
+       
         text = re.sub(r'\s+', ' ', text).strip()
         
-        # Apply synonym replacements
+      
         words = text.split()
         normalized_words = []
         for word in words:
@@ -109,10 +88,10 @@ class NUCCSpecialtyMapper:
         return ' '.join(normalized_words)
     
     def _build_indices(self):
-        """Build all matching indices"""
+        
         print("Building indices...")
         
-        # Normalize NUCC data
+     
         self.nucc_df['norm_classification'] = self.nucc_df['classification'].apply(
             self._normalize_text
         )
@@ -122,15 +101,13 @@ class NUCCSpecialtyMapper:
         self.nucc_df['norm_display'] = self.nucc_df['display_name'].apply(
             self._normalize_text
         )
-        
-        # Combined search text
+    
         self.nucc_df['search_text'] = (
             self.nucc_df['norm_classification'] + ' ' +
             self.nucc_df['norm_specialization'] + ' ' +
             self.nucc_df['norm_display']
         )
-        
-        # 1. Exact match indices
+    
         self.exact_match = {}
         for idx, row in self.nucc_df.iterrows():
             for field in ['norm_classification', 'norm_specialization', 'norm_display']:
@@ -142,15 +119,13 @@ class NUCCSpecialtyMapper:
                         'code': row['code'],
                         'display': row['display_name']
                     })
-        
-        # 2. Phonetic indices (Soundex + Double Metaphone)
         self.soundex_index = defaultdict(list)
         self.metaphone_index = defaultdict(list)
         
         for idx, row in self.nucc_df.iterrows():
             classification = row['norm_classification']
             if classification:
-                # Soundex
+            
                 try:
                     soundex_code = jellyfish.soundex(classification.split()[0])
                     self.soundex_index[soundex_code].append({
@@ -160,7 +135,6 @@ class NUCCSpecialtyMapper:
                 except:
                     pass
                 
-                # Double Metaphone
                 try:
                     primary, secondary = jellyfish.metaphone(classification.split()[0]), None
                     if primary:
@@ -170,8 +144,6 @@ class NUCCSpecialtyMapper:
                         })
                 except:
                     pass
-        
-        # 3. TF-IDF vectorization with character n-grams
         self.tfidf_vectorizer = TfidfVectorizer(
             ngram_range=(2, 4),  # Character n-grams
             analyzer='char_wb',
@@ -186,7 +158,7 @@ class NUCCSpecialtyMapper:
         print("✓ Indices built successfully")
     
     def _levenshtein_similarity(self, s1, s2):
-        """Calculate normalized Levenshtein similarity"""
+   
         if not s1 or not s2:
             return 0.0
         distance = jellyfish.levenshtein_distance(s1, s2)
@@ -194,13 +166,13 @@ class NUCCSpecialtyMapper:
         return 1 - (distance / max_len)
     
     def _jaro_winkler_similarity(self, s1, s2):
-        """Calculate Jaro-Winkler similarity"""
+    
         if not s1 or not s2:
             return 0.0
         return jellyfish.jaro_winkler_similarity(s1, s2)
     
     def _ngram_similarity(self, s1, s2, n=3):
-        """Calculate character n-gram similarity (Jaccard)"""
+       
         if not s1 or not s2:
             return 0.0
         
@@ -219,7 +191,7 @@ class NUCCSpecialtyMapper:
         return intersection / union if union > 0 else 0.0
     
     def _jaccard_word_similarity(self, s1, s2):
-        """Calculate word-level Jaccard similarity"""
+  
         if not s1 or not s2:
             return 0.0
         
@@ -235,21 +207,21 @@ class NUCCSpecialtyMapper:
         return intersection / union if union > 0 else 0.0
     
     def _stage1_exact_match(self, normalized_input):
-        """Stage 1: Exact matching"""
+    
         if normalized_input in self.exact_match:
             matches = self.exact_match[normalized_input]
             return [m['code'] for m in matches], 1.0, "Exact match"
         return None, 0.0, ""
     
     def _stage2_phonetic_match(self, normalized_input):
-        """Stage 2: Phonetic matching (Soundex + Metaphone)"""
+    
         if not normalized_input:
             return None, 0.0, ""
         
         first_word = normalized_input.split()[0]
         matches = []
         
-        # Try Soundex
+     
         try:
             soundex_code = jellyfish.soundex(first_word)
             if soundex_code in self.soundex_index:
@@ -257,7 +229,7 @@ class NUCCSpecialtyMapper:
         except:
             pass
         
-        # Try Metaphone
+       
         try:
             metaphone_code = jellyfish.metaphone(first_word)
             if metaphone_code in self.metaphone_index:
@@ -266,14 +238,14 @@ class NUCCSpecialtyMapper:
             pass
         
         if matches:
-            # Deduplicate
+      
             unique_codes = list(set(m['code'] for m in matches))
             return unique_codes, 0.85, "Phonetic match (Soundex/Metaphone)"
         
         return None, 0.0, ""
     
     def _stage3_fuzzy_match(self, normalized_input):
-        """Stage 3: Fuzzy string matching (Levenshtein + Jaro-Winkler)"""
+
         best_matches = []
         
         for idx, row in self.nucc_df.iterrows():
@@ -287,7 +259,7 @@ class NUCCSpecialtyMapper:
                 row['norm_classification']
             )
             
-            # Combined score (weighted average)
+           
             combined_score = 0.5 * lev_sim + 0.5 * jw_sim
             
             if combined_score >= 0.80:
@@ -298,7 +270,7 @@ class NUCCSpecialtyMapper:
                 })
         
         if best_matches:
-            # Sort by score
+        
             best_matches.sort(key=lambda x: x['score'], reverse=True)
             top_score = best_matches[0]['score']
             top_codes = [m['code'] for m in best_matches if m['score'] >= top_score - 0.05]
@@ -307,21 +279,21 @@ class NUCCSpecialtyMapper:
         return None, 0.0, ""
     
     def _stage4_tfidf_match(self, normalized_input):
-        """Stage 4: TF-IDF with cosine similarity"""
+     
         if not normalized_input:
             return None, 0.0, ""
         
-        # Vectorize input
+       
         input_vec = self.tfidf_vectorizer.transform([normalized_input])
         
-        # Calculate cosine similarity
+       
         similarities = cosine_similarity(input_vec, self.tfidf_matrix).flatten()
         
-        # Get top matches
+
         top_indices = np.argsort(similarities)[-10:][::-1]
         top_scores = similarities[top_indices]
         
-        # Filter by threshold
+       
         valid_matches = []
         for idx, score in zip(top_indices, top_scores):
             if score >= 0.40:
@@ -339,7 +311,7 @@ class NUCCSpecialtyMapper:
         return None, 0.0, ""
     
     def _stage5_ngram_match(self, normalized_input):
-        """Stage 5: N-gram similarity"""
+     
         best_matches = []
         
         for idx, row in self.nucc_df.iterrows():
@@ -350,13 +322,13 @@ class NUCCSpecialtyMapper:
                 n=3
             )
             
-            # Word-level Jaccard
+           
             jaccard_sim = self._jaccard_word_similarity(
                 normalized_input,
                 row['norm_classification']
             )
             
-            # Combined score
+         
             combined_score = 0.6 * ngram_sim + 0.4 * jaccard_sim
             
             if combined_score >= 0.60:
@@ -375,7 +347,7 @@ class NUCCSpecialtyMapper:
         return None, 0.0, ""
     
     def _handle_compound_specialties(self, raw_specialty):
-        """Handle compound specialties like 'Cardio/Diab' or 'Pain & Spine'"""
+     
         # Split on common delimiters
         delimiters = r'[/&,\-]|\sand\s'
         parts = re.split(delimiters, raw_specialty, flags=re.IGNORECASE)
@@ -401,42 +373,26 @@ class NUCCSpecialtyMapper:
         return None, 0.0, ""
     
     def map_specialty(self, raw_specialty):
-        """
-        Map raw specialty to NUCC codes using multi-stage pipeline
-        
-        Returns:
-            codes: List of NUCC codes or ['JUNK']
-            confidence: Float between 0-1
-            explanation: String explaining the match
-        """
         if pd.isna(raw_specialty) or not str(raw_specialty).strip():
             return ['JUNK'], 0.0, "Empty input"
         
         raw_specialty = str(raw_specialty).strip()
         
-        # Check if it's clearly junk (too short or random)
+   
         if len(raw_specialty) < 3:
             return ['JUNK'], 0.0, "Input too short"
-        
-        # Check for compound specialties first
         compound_result = self._handle_compound_specialties(raw_specialty)
         if compound_result[0]:
             codes, conf, explain = compound_result
             if conf >= self.confidence_threshold:
                 return codes, conf, explain
-        
-        # Normalize input
         normalized_input = self._normalize_text(raw_specialty)
         
         if not normalized_input:
             return ['JUNK'], 0.0, "Invalid input after normalization"
-        
-        # Stage 1: Exact Match
         codes, conf, explain = self._stage1_exact_match(normalized_input)
         if codes and conf >= self.confidence_threshold:
             return codes, conf, explain
-        
-        # Stage 2: Phonetic Match
         codes, conf, explain = self._stage2_phonetic_match(normalized_input)
         if codes and conf >= self.confidence_threshold:
             return codes, conf, explain
@@ -460,13 +416,6 @@ class NUCCSpecialtyMapper:
         return ['JUNK'], 0.0, "No confident match found"
     
     def process_file(self, input_csv_path, output_csv_path):
-        """
-        Process input CSV and generate output with mappings
-        
-        Args:
-            input_csv_path: Path to input CSV with 'raw_specialty' column
-            output_csv_path: Path to save output CSV
-        """
         print(f"\nProcessing {input_csv_path}...")
         start_time = time.time()
         
@@ -554,8 +503,6 @@ def main():
         nucc_csv_path=args.nucc,
         confidence_threshold=args.threshold
     )
-    
-    # Process file
     mapper.process_file(
         input_csv_path=args.input,
         output_csv_path=args.output

@@ -1,0 +1,66 @@
+I've created a hybrid version that combines the best features from all three implementations plus adds synonym learning! Here's what makes it powerful:
+🚀 Key Features
+1. Multi-Stage Pipeline (4 Stages)
+
+Stage 1: Exact matching (fastest)
+Stage 2: Phonetic matching (Soundex + Metaphone) - handles misspellings
+Stage 3: Multi-metric fuzzy matching (Fuzzy + Jaccard + N-gram + Levenshtein + Jaro-Winkler)
+Stage 4: TF-IDF with character n-grams (handles partial words)
+
+2. Synonym Learning 🧠
+
+Tracks successful mappings automatically
+Identifies patterns (e.g., "cardio" → Cardiology)
+Exports learned abbreviations for reuse
+Minimum frequency threshold prevents noise
+
+3. Compound Specialty Handling
+
+Splits on /, ,, +, &, and
+Maps each segment independently
+Combines results intelligently
+
+4. Robust Normalization
+
+Handles Unicode, diacritics
+Expands abbreviations
+Removes noise words
+Case-insensitive
+With Custom Synonyms
+
+python standardize_hybrid.py \
+  --nucc nucc_taxonomy_master.csv \
+  --input input.csv \
+  --out output.csv \
+  --synonyms my_synonyms.csv \
+  --threshold 0.70
+
+With Synonym Learning (Recommended!)
+python standardize_hybrid.py \
+  --nucc nucc_taxonomy_master.csv \
+  --input input.csv \
+  --out output.csv \
+  --learn-synonyms \
+  --save-learned learned_synonyms.csv
+After the first run, use the learned synonyms:
+
+python standardize_hybrid.py \
+  --nucc nucc_taxonomy_master.csv \
+  --input new_input.csv \
+  --out new_output.csv \
+  --synonyms learned_synonyms.csv
+
+
+python standardize_hybrid.py \
+  --nucc nucc_taxonomy_master.csv \
+  --input input.csv \
+  --out output.csv \
+  --synonyms custom_synonyms.csv \
+  --threshold 0.65 \
+  --topn 5 \
+  --learn-synonyms \
+  --save-learned learned_synonyms.csv
+
+
+
+

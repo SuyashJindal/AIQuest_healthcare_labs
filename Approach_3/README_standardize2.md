@@ -40,11 +40,7 @@ The system is designed for **robust data standardization** in healthcare claims,
 
 Clone and install requirements:
 
-```bash
-git clone https://github.com/<your-username>/nucc-standardizer.git
-cd nucc-standardizer
-pip install -r requirements.txt
-```
+
 
 ### Requirements
 ```text
@@ -195,15 +191,3 @@ Saved 5000 rows to results/mapped_specialties.csv
 ```
 
 ---
-
-## 🧑‍💻 Author
-
-**Suyash Jindal**  
-IIT Kanpur | Healthcare Data Standardization Project  
-📧 [Contact via GitHub](https://github.com/<your-username>)
-
----
-
-## 📜 License
-
-MIT License © 2025 Suyash Jindal
